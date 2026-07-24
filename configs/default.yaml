@@ -1,0 +1,96 @@
+# Vision Robustness Course Project — default configuration
+# 3 partners → 4 tasks, 4 distortions, 4 evaluation stages
+
+project:
+  name: vision-robustness
+  seed: 42
+  device: auto  # auto | cpu | cuda | mps
+
+paths:
+  data_root: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  distorted_dir: data/distorted
+  enhanced_dir: data/enhanced
+  results_dir: results
+  figures_dir: results/figures
+
+dataset:
+  name: ade20k
+  # Hugging Face dataset id (parquet-compatible ADE20K / SceneParse150 mirror)
+  hf_id: merve/scene_parse_150
+  split: validation
+  # ~500 validation images for more stable metrics / fine-tuning
+  max_samples: 500
+  image_size: [512, 512]  # H, W for DL tasks; classical tasks use native size
+  # Local cache for downloaded ADE20K samples
+  cache_dir: data/raw/ade20k
+
+# Intensity ladder → named severities L1…Ln. SNR/PSNR are measured vs clean.
+intensity_levels: [0.2, 0.4, 0.6, 0.8, 1.0]
+
+distortions:
+  gaussian_noise:
+    enabled: true
+    # std relative to [0, 255]; scaled by intensity
+    base_std: 40.0
+  jpeg_compression:
+    enabled: true
+    # quality = max_q - intensity * (max_q - min_q)
+    max_quality: 95
+    min_quality: 10
+  low_light:
+    enabled: true
+    # multiplicative darkening + optional gamma
+    min_gain: 0.15
+    max_gain: 0.85
+    gamma: 1.4
+  rain:
+    enabled: true
+    base_streaks: 120
+    streak_length: 18
+    streak_thickness: 1
+    brightness: 0.75
+
+enhancements:
+  gaussian_noise: non_local_means
+  jpeg_compression: bilateral_restore
+  low_light: clahe
+  rain: derain
+
+tasks:
+  features:
+    method: orb
+    n_features: 1000
+    match_ratio: 0.75
+    # Match accuracy vs keypoints/descriptors on the clean image
+  edges:
+    method: canny
+    low_threshold: 50
+    high_threshold: 150
+    # Edge F1 vs Canny on clean image (pseudo-GT)
+  detection:
+    method: yolov8n
+    model_name: yolov8n.pt
+    conf: 0.25
+    iou: 0.5
+  segmentation:
+    method: segformer
+    model_name: nvidia/segformer-b0-finetuned-ade-512-512
+    # mIoU vs ADE20K ground-truth masks
+
+evaluation:
+  # Stages: clean | distorted | enhanced | finetuned
+  stages: [clean, distorted, enhanced, finetuned]
+  save_visuals: true
+  visuals_per_stage: 8
+
+training:
+  yolo:
+    epochs: 40
+    imgsz: 640
+    batch: 8
+    # Fine-tune on distorted images with labels transferred from clean
+    distortion: gaussian_noise
+    intensity: 0.6
+    output_dir: results/finetuned/yolo

@@ -1,0 +1,79 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# --- Virtual environments ---
+.venv/
+venv/
+ENV/
+env/
+
+# --- Secrets / env ---
+.env
+.env.*
+!.env.example
+*.pem
+credentials*.json
+secrets.*
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# --- Model weights & training runs ---
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.safetensors
+runs/
+wandb/
+ultralytics/
+yolov8*.pt
+
+# --- Datasets & generated image caches (large) ---
+data/raw/**
+!data/raw/.gitkeep
+data/processed/**
+!data/processed/.gitkeep
+data/distorted/**
+!data/distorted/.gitkeep
+data/enhanced/**
+!data/enhanced/.gitkeep
+
+# --- Heavy result payloads; keep compact report tables + figures ---
+results/**
+!results/.gitkeep
+!results/report/
+!results/report/**
+!results/figures/
+!results/figures/*.png
+results/**/visuals/
+results/finetuned/yolo/
+results/*.log
+results/full_run*.log
+
+# --- Caches / notebooks ---
+.cache/
+hf_cache/
+**/huggingface/
+notebooks/.ipynb_checkpoints/
+*.log

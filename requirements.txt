@@ -1,0 +1,33 @@
+# Core
+numpy>=1.24
+opencv-python>=4.8
+Pillow>=10.0
+PyYAML>=6.0
+tqdm>=4.66
+matplotlib>=3.8
+seaborn>=0.13
+pandas>=2.0
+scikit-image>=0.22
+scipy>=1.11
+
+# Augmentations / distortions helpers
+albumentations>=1.4
+
+# Deep learning
+torch>=2.1
+torchvision>=0.16
+ultralytics>=8.1
+transformers>=4.38
+accelerate>=0.27
+datasets>=2.16
+huggingface_hub>=0.20
+safetensors>=0.4
+timm>=0.9
+
+# Evaluation helpers
+pycocotools>=2.0.7
+tabulate>=0.9
+
+# Dev / tests
+pytest>=7.4
+rich>=13.0

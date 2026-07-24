@@ -1,0 +1,74 @@
+# Fast local smoke-test configuration (synthetic data, classical tasks only by default)
+project:
+  name: vision-robustness-smoke
+  seed: 0
+  device: cpu
+
+paths:
+  data_root: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  distorted_dir: data/distorted
+  enhanced_dir: data/enhanced
+  results_dir: results
+  figures_dir: results/figures
+
+dataset:
+  name: synthetic
+  hf_id: scene_parse_150
+  split: validation
+  max_samples: 4
+  image_size: [128, 128]
+  cache_dir: data/raw/synthetic
+
+intensity_levels: [0.4, 0.8]
+
+distortions:
+  gaussian_noise:
+    enabled: true
+    base_std: 35.0
+  jpeg_compression:
+    enabled: true
+    max_quality: 90
+    min_quality: 20
+  low_light:
+    enabled: true
+    min_gain: 0.2
+    max_gain: 0.8
+    gamma: 1.3
+  rain:
+    enabled: true
+    base_streaks: 40
+    streak_length: 12
+    streak_thickness: 1
+    brightness: 0.7
+
+enhancements:
+  gaussian_noise: non_local_means
+  jpeg_compression: bilateral_restore
+  low_light: clahe
+  rain: derain
+
+tasks:
+  features:
+    method: orb
+    n_features: 300
+    match_ratio: 0.75
+  edges:
+    method: canny
+    low_threshold: 50
+    high_threshold: 150
+
+evaluation:
+  stages: [clean, distorted, enhanced]
+  save_visuals: true
+  visuals_per_stage: 2
+
+training:
+  yolo:
+    epochs: 1
+    imgsz: 320
+    batch: 2
+    distortion: gaussian_noise
+    intensity: 0.6
+    output_dir: results/finetuned/yolo
