@@ -56,7 +56,30 @@ We also record **activity** metrics (e.g. `#keypoints`, `#detections`, confidenc
 
 ---
 
-## 3. How to reproduce
+## 3. Distortions, severity and recovery
+
+Each distortion is applied at five severity levels. We quantify pixel change with
+
+**SNR = 10·log₁₀(P_signal / P_noise)** (and PSNR).
+
+Mean SNR over the **500-image** run:
+
+| Distortion | L1 SNR (dB) | L3 SNR (dB) | L5 SNR (dB) | Paired enhancement |
+|------------|-------------|-------------|-------------|--------------------|
+| Gaussian noise | 24.4 | 15.1 | 11.0 | Non-Local Means |
+| JPEG compression | 33.3 | 29.0 | 22.6 | Bilateral + interpolation |
+| Low light | 9.4 | 3.3 | 0.5 | CLAHE |
+| Rain | 36.1 | 28.5 | 23.7 | Streak-targeted derain |
+
+Full table: `results/report/snr_by_severity.csv`.
+
+![Distortion severity overview](results/figures/grid_distortions.png)
+
+*Figure 1 — Clean sample and all five severity levels for every distortion. Panel labels show per-image SNR. Low light changes brightness strongly (low SNR); rain and mild JPEG can look subtle while still affecting detectors.*
+
+---
+
+## 4. How to reproduce
 
 ```bash
 python3 -m venv .venv
@@ -72,29 +95,14 @@ python scripts/run_experiment.py --config configs/default.yaml
 make smoke
 ```
 
-Stage scripts: `scripts/01` … `scripts/10`, plus `scripts/00_validate_pipeline.py`.
-
+Stage scripts: `scripts/01` … `scripts/10`, plus `scripts/00_validate_pipeline.py`.  
 Configuration: `configs/default.yaml` (`max_samples: 500`).
-
----
-
-## 4. Repository layout
-
-```text
-configs/                  # experiment config
-src/vision_robustness/    # package: data, distortions, enhancements, tasks, metrics, pipeline, training
-scripts/                  # stage CLIs + orchestrator
-tests/                    # unit + smoke tests
-results/                  # metrics + figures (large raw images gitignored)
-presentation/             # final PPT (add before submission)
-data/                     # caches (gitignored payloads)
-```
 
 ---
 
 ## 5. Results (500 ADE20K images)
 
-Compact tables are also stored under `results/report/`. Figures: `results/figures/`.
+Compact tables: `results/report/`. All report figures: `results/figures/`.
 
 ### 5.1 Clean baseline
 
@@ -105,20 +113,15 @@ Compact tables are also stored under `results/report/`. Figures: `results/figure
 | Detection | YOLOv8n | detection_f1 (vs clean ref) | 1.000 |
 | Segmentation | SegFormer-B0 | **mIoU (GT)** | **0.456** |
 
-SegFormer clean mIoU ≈ 0.46 is a realistic pretrained baseline on diverse ADE scenes (not a failure).
+SegFormer clean mIoU ≈ 0.46 is a realistic pretrained baseline on diverse ADE scenes.
 
-### 5.2 Distortion severity ↔ SNR (mean over 500 images)
+![ADE20K sample preview](results/figures/eda_samples.png)
 
-| Distortion | L1 SNR (dB) | L3 SNR (dB) | L5 SNR (dB) |
-|------------|-------------|-------------|-------------|
-| Gaussian noise | 24.4 | 15.1 | 11.0 |
-| JPEG compression | 33.3 | 29.0 | 22.6 |
-| Low light | 9.4 | 3.3 | 0.5 |
-| Rain | 36.1 | 28.5 | 23.7 |
+*Figure 2 — Example ADE20K validation scenes used in the experiment (with segmentation masks where available).*
 
-Full table: `results/report/snr_by_severity.csv`.
+### 5.2 Behavior under distortion
 
-### 5.3 Performance under distortion (mean over L1–L5)
+Mean primary metrics over L1–L5:
 
 | Task / metric | Noise | JPEG | Low light | Rain |
 |---------------|------:|-----:|----------:|-----:|
@@ -127,7 +130,23 @@ Full table: `results/report/snr_by_severity.csv`.
 | Detection detection_f1 | 0.335 | 0.463 | 0.504 | 0.575 |
 | Segmentation mIoU | 0.344 | 0.432 | 0.428 | 0.439 |
 
-**Detection F1 vs severity (shows required intensity curves):**
+![ORB match accuracy vs severity](results/figures/report_features_match_accuracy_curves.png)
+
+*Figure 3 — ORB match accuracy versus severity. Low light and strong noise hurt correspondence the most.*
+
+![Canny edge F1 vs severity](results/figures/report_edges_edge_f1_curves.png)
+
+*Figure 4 — Edge F1 versus severity. Noise destroys edge maps; rain is comparatively mild for Canny.*
+
+![Detection F1 vs severity](results/figures/report_detection_detection_f1_curves.png)
+
+*Figure 5 — YOLO detection F1 versus severity. Performance falls steadily with intensity; noise and severe JPEG/low light are the hardest.*
+
+![Segmentation mIoU vs severity](results/figures/report_segmentation_miou_curves.png)
+
+*Figure 6 — SegFormer mIoU versus severity (GT ADE masks). Degradation is smoother than detection, but noise still produces the largest drop.*
+
+**Detection F1 by severity level:**
 
 | Distortion | L1 | L2 | L3 | L4 | L5 |
 |------------|---:|---:|---:|---:|---:|
@@ -136,18 +155,17 @@ Full table: `results/report/snr_by_severity.csv`.
 | Low light | 0.656 | 0.614 | 0.552 | 0.468 | 0.227 |
 | Rain | 0.659 | 0.626 | 0.573 | 0.535 | 0.483 |
 
-**Segmentation mIoU vs severity:**
-
-| Distortion | L1 | L2 | L3 | L4 | L5 |
-|------------|---:|---:|---:|---:|---:|
-| Gaussian noise | 0.422 | 0.384 | 0.346 | 0.309 | 0.261 |
-| JPEG | 0.454 | 0.452 | 0.447 | 0.440 | 0.366 |
-| Low light | 0.454 | 0.451 | 0.444 | 0.431 | 0.360 |
-| Rain | 0.453 | 0.449 | 0.441 | 0.435 | 0.419 |
-
 **Finding:** stronger severity (lower SNR) → lower accuracy for all tasks. Noise and strong JPEG/low-light hurt detection most; rain is milder.
 
-### 5.4 Enhancement recovery (enhanced − distorted)
+### 5.3 Recovery through enhancement
+
+Every distorted image is processed with the paired enhancer, and all tasks are re-run.
+
+![Enhancement before and after](results/figures/grid_enhancement.png)
+
+*Figure 7 — Clean, distorted (L3), and enhanced examples for each distortion. NLM and CLAHE are visually clear; JPEG restore and derain are subtler.*
+
+Mean change **enhanced − distorted** (averaged over severities):
 
 | Task | Noise | JPEG | Low light | Rain |
 |------|------:|-----:|----------:|-----:|
@@ -156,14 +174,27 @@ Full table: `results/report/snr_by_severity.csv`.
 | Detection | +0.002 | +0.010 | **+0.026** | −0.008 |
 | Segmentation | −0.009 | −0.016 | −0.020 | 0.000 |
 
+![Stage bars — detection](results/figures/report_detection_detection_f1_stages.png)
+
+*Figure 8 — Detection F1 by stage (clean / distorted / enhanced), aggregated per distortion.*
+
+![Stage bars — edges](results/figures/report_edges_edge_f1_stages.png)
+
+*Figure 9 — Edge F1 by stage. CLAHE under low light is the clearest classical recovery.*
+
+![Stage bars — features](results/figures/report_features_match_accuracy_stages.png)
+
+*Figure 10 — Feature match accuracy by stage. Smoothing often hurts ORB distinctiveness even when the image looks cleaner.*
+
+![Stage bars — segmentation](results/figures/report_segmentation_miou_stages.png)
+
+*Figure 11 — Segmentation mIoU by stage. Classical enhancement rarely restores SegFormer accuracy.*
+
 **Finding:** classical enhancement does **not** universally restore task metrics.  
 Clear wins: **CLAHE for low-light edges/detection**; mild edge help from denoising.  
-Feature matching often drops after smoothing (keypoints become less distinctive).  
-This is an expected course insight: visual cleanup ≠ always better algorithm scores.
+Feature matching often drops after smoothing. Visual cleanup ≠ always better algorithm scores.
 
-Before/after visuals: `results/figures/before_after_*.png`.
-
-### 5.5 YOLO fine-tuning (Part 4)
+### 5.4 YOLO fine-tuning (Part 4)
 
 Setup: labels from clean YOLO detections; train on **Gaussian-noise** images at intensity **0.6**; evaluate on all distortions.
 
@@ -176,6 +207,14 @@ Setup: labels from clean YOLO detections; train on **Gaussian-noise** images at 
 
 On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned **0.498** (**+0.167**).
 
+![Fine-tuned vs pretrained detection](results/figures/finetuned_detection_f1.png)
+
+*Figure 12 — Detection F1 after fine-tuning versus the pretrained detector under each distortion.*
+
+![YOLO fine-tuning history](results/figures/yolo_finetune_history.png)
+
+*Figure 13 — Ultralytics training/validation curves for the YOLOv8n fine-tune run.*
+
 **Finding:** with **500 images**, fine-tuning clearly helps the matched distortion (noise). Gains do not automatically transfer to other distortions (some negative transfer).
 
 ---
@@ -185,7 +224,7 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 1. All four tasks degrade as distortion severity rises; SNR is a useful intensity axis.  
 2. Noise is among the most damaging corruptions for edges, detection, and segmentation.  
 3. Classical enhancements help **selectively** (best evidence: CLAHE under low light).  
-4. Detector fine-tuning on distorted data **works** for the trained condition at this scale (500 images), unlike the earlier 50-image pilot.  
+4. Detector fine-tuning on distorted data **works** for the trained condition at this scale (500 images).  
 5. Activity metrics and GT/stability metrics can disagree — report both.
 
 ---
@@ -197,7 +236,7 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 - [x] ≥1 DL model (YOLO + SegFormer)  
 - [x] ≥4 distortions with multi-level severity + SNR/PSNR  
 - [x] Enhancement path + fine-tune path  
-- [x] Per-class columns where applicable; curves vs severity in `results/figures/`  
+- [x] Curves vs severity + before/after visuals in `results/figures/`  
 - [x] Modular code + README report with tables/visuals  
 - [ ] Team registration on Moodle (names, emails, GitHub URL)  
 - [ ] Final presentation PPT in `presentation/`
@@ -214,7 +253,22 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 
 ---
 
-## 9. Notes / limitations
+## 9. Repository layout
+
+```text
+configs/                  # experiment config
+src/vision_robustness/    # package: data, distortions, enhancements, tasks, metrics, pipeline, training
+scripts/                  # stage CLIs + orchestrator
+tests/                    # unit + smoke tests
+results/figures/          # README figures (grids, curves, stages, YOLO history)
+results/report/           # compact summary CSVs
+presentation/             # final PPT (add before submission)
+data/                     # caches (gitignored payloads)
+```
+
+---
+
+## 10. Notes / limitations
 
 - Detection “clean F1 = 1.0” is relative to clean-image YOLO outputs used as cascading references when COCO boxes are unavailable; segmentation uses true ADE GT.  
 - Fine-tune uses remapped contiguous class ids (Ultralytics requirement); eval remaps back to COCO ids for comparison.  
