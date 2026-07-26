@@ -77,7 +77,7 @@ Full table: `results/report/snr_by_severity.csv`.
 
 *Figure 1 — Clean sample and all five severity levels for every distortion. Panel labels show per-image SNR. Low light changes brightness strongly (low SNR); rain and mild JPEG can look subtle while still affecting detectors.*
 
-# Enhancement Methodology (Signal Processing Perspective)
+# Enhancement Methodology 
 
 - Non-Local Means (Gaussian Noise): Unlike standard linear filters that uniformly blur images, NLM leverages self-similarity across the spatial domain. It averages pixels with similar local neighborhoods, effectively cancelling out zero-mean Gaussian noise while preserving high-frequency structural details.
 - Bilateral Filtering (JPEG Compression): To mitigate block artifacts caused by DCT quantization, the bilateral filter applies a combined domain (spatial) and range (intensity) kernel. This selectively smooths homogeneous regions while halting diffusion across strong gradients, strictly preserving edges.
@@ -222,6 +222,13 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 *Figure 13 — Ultralytics training/validation curves for the YOLOv8n fine-tune run.*
 
 **Finding:** with **500 images**, fine-tuning clearly helps the matched distortion (noise). Gains do not automatically transfer to other distortions (some negative transfer).
+
+# Fine-Tuning Configuration
+
+- Base Architecture: YOLOv8n (nano) for rapid inference.
+- Dataset Generation: Pseudo-labels generated from the pre-trained baseline model applied to clean ADE20K images.
+- Training Condition: Evaluated against Gaussian noise at severity level 0.6.
+- Optimization: Executed via the Ultralytics framework (device and epoch parameters dynamically resolved via configs/default.yaml).
 
 ---
 
