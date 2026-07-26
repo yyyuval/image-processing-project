@@ -266,13 +266,6 @@ data/                     # caches (gitignored payloads)
 
 ---
 
-# Environment & Pipeline Orchestration
-- Execution: All scripts are designed for a Python 3 runtime environment.
-- Orchestration: A central entrypoint script handles the end-to-end experiment by leveraging the subprocess module to execute modular stages (e.g., dataset downloading, distortion, enhancement, and evaluation) in sequence.
-- Metrics Aggregation: The pipeline heavily utilizes the pandas library to aggregate raw CSV outputs from various stages, facilitating the generation of unified metric dataframes and performance curves.  
-
----
-
 ## 10. Evaluation Methodology & Known Limitations
 - Cross-Domain Label Mismatch: The baseline YOLOv8 model is pre-trained on the COCO dataset, whereas our ground-truth (GT) semantic masks originate from ADE20K. To bridge this domain label gap, our pipeline dynamically extracts bounding boxes from the ADE20K semantic masks and performs class-agnostic localization evaluation for YOLO GT metrics.
 - Stability vs. Absolute Accuracy: For classical low-level tasks (ORB features and Canny edges), the evaluation metrics reflect algorithm stability under distortion rather than absolute ground-truth accuracy. Performance is measured utilizing the model's prediction on the clean image as a dynamic cascading reference.
