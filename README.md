@@ -63,6 +63,7 @@ Each distortion is applied at five severity levels. We quantify pixel change wit
 **SNR = 10·log₁₀(P_signal / P_noise)** (and PSNR).
 
 **Distortion Modeling Methodology**
+
 To rigorously evaluate robustness, distortions were implemented as parametric models simulating real-world sensor and environmental conditions:
 * **Gaussian Noise:** Simulated as Additive White Gaussian Noise (AWGN) sampled from a normal distribution. The standard deviation ($\sigma$) is scaled strictly according to the normalized intensity level to simulate varying degrees of sensor thermal noise[cite: 29, 32].
 * **JPEG Compression:** Replicates bandwidth-constrained transmission artifacts. The image is actively encoded and decoded using standard JPEG compression, with the quality factor inversely scaled against the intensity level[cite: 31, 32].
