@@ -77,6 +77,12 @@ Full table: `results/report/snr_by_severity.csv`.
 
 *Figure 1 — Clean sample and all five severity levels for every distortion. Panel labels show per-image SNR. Low light changes brightness strongly (low SNR); rain and mild JPEG can look subtle while still affecting detectors.*
 
+# Enhancement Methodology (Signal Processing Perspective)
+
+- Non-Local Means (Gaussian Noise): Unlike standard linear filters that uniformly blur images, NLM leverages self-similarity across the spatial domain. It averages pixels with similar local neighborhoods, effectively cancelling out zero-mean Gaussian noise while preserving high-frequency structural details.
+- Bilateral Filtering (JPEG Compression): To mitigate block artifacts caused by DCT quantization, the bilateral filter applies a combined domain (spatial) and range (intensity) kernel. This selectively smooths homogeneous regions while halting diffusion across strong gradients, strictly preserving edges.
+- CLAHE (Low-Light Recovery): Standard global histogram equalization often amplifies noise in dark, uniform regions. CLAHE mitigates this by computing local histograms and clipping the distribution (limiting the contrast gain) before applying the cumulative distribution function, yielding balanced local enhancement without blowing out noise.
+
 ---
 
 ## 4. How to reproduce
