@@ -23,7 +23,7 @@ Protocol (course Parts 1–4):
 
 ---
 
-## 2. Experimental choices (3 partners → 4 / 4 / 4)
+## 2. Experimental choices 
 
 | Component | Choice | Why |
 |-----------|--------|-----|
