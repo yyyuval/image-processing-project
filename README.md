@@ -229,30 +229,6 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 
 ---
 
-## 7. Course requirements checklist
-
-- [x] Public dataset with GT for ≥1 task (ADE20K masks → SegFormer mIoU)  
-- [x] ≥4 tasks including low-level and high-level  
-- [x] ≥1 DL model (YOLO + SegFormer)  
-- [x] ≥4 distortions with multi-level severity + SNR/PSNR  
-- [x] Enhancement path + fine-tune path  
-- [x] Curves vs severity + before/after visuals in `results/figures/`  
-- [x] Modular code + README report with tables/visuals  
-- [ ] Team registration on Moodle (names, emails, GitHub URL)  
-- [ ] Final presentation PPT in `presentation/`
-
----
-
-## 8. Partner ownership (suggested)
-
-| Partner | Modules |
-|---------|---------|
-| A | Features + edges; noise & JPEG |
-| B | Detection + YOLO fine-tune; low light |
-| C | Segmentation; rain; README / PPT polish |
-
----
-
 ## 9. Repository layout
 
 ```text
