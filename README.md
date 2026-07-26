@@ -1,9 +1,9 @@
 # Robustness of Vision Algorithms under Image Distortions
 
-**Image Processing / Vision — Course Project**  
+**Image Processing Course Final Project** 
+Team: yuval Chen · Lina Biniashvili · Adi Gilboa
 Repository: [yyyuval/image-processing-project](https://github.com/yyyuval/image-processing-project)
-
-This repository is the course submission. The **README is the project report**.
+This repository is the course submission. The README is the project report.
 
 ---
 
