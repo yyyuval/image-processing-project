@@ -257,7 +257,7 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 
 ---
 
-## 9. Repository layout
+## 7. Repository layout
 
 ```text
 configs/                  # experiment config
@@ -272,7 +272,7 @@ data/                     # caches (gitignored payloads)
 
 ---
 
-## 10. Evaluation Methodology & Known Limitations
+## 8. Evaluation Methodology & Known Limitations
 - Cross-Domain Label Mismatch: The baseline YOLOv8 model is pre-trained on the COCO dataset, whereas our ground-truth (GT) semantic masks originate from ADE20K. To bridge this domain label gap, our pipeline dynamically extracts bounding boxes from the ADE20K semantic masks and performs class-agnostic localization evaluation for YOLO GT metrics.
 - Stability vs. Absolute Accuracy: For classical low-level tasks (ORB features and Canny edges), the evaluation metrics reflect algorithm stability under distortion rather than absolute ground-truth accuracy. Performance is measured utilizing the model's prediction on the clean image as a dynamic cascading reference.
 - Strict Feature Matching: ORB feature matching accuracy is constrained by a rigorous KNN Lowe's ratio test (ratio = 0.75) to actively filter out ambiguous correspondences. Consequently, the reported match accuracy strictly reflects robust structural persistence.
