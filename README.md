@@ -264,6 +264,8 @@ presentation/             # final PPT (add before submission)
 data/                     # caches (gitignored payloads)
 ```
 
+---
+
 # Environment & Pipeline Orchestration
 - Execution: All scripts are designed for a Python 3 runtime environment.
 - Orchestration: A central entrypoint script handles the end-to-end experiment by leveraging the subprocess module to execute modular stages (e.g., dataset downloading, distortion, enhancement, and evaluation) in sequence.
