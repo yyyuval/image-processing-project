@@ -68,11 +68,11 @@ Each distortion is applied at five severity levels. We quantify pixel change wit
 **Distortion Modeling Methodology**
 
 To rigorously evaluate robustness, distortions were implemented as parametric models simulating real-world sensor and environmental conditions:
-* **Gaussian Noise:** Simulated as Additive White Gaussian Noise (AWGN) sampled from a normal distribution. The standard deviation ($\sigma$) is scaled strictly according to the normalized intensity level to simulate varying degrees of sensor thermal noise[cite: 29, 32].
-* **JPEG Compression:** Replicates bandwidth-constrained transmission artifacts. The image is actively encoded and decoded using standard JPEG compression, with the quality factor inversely scaled against the intensity level[cite: 31, 32].
-* **Low-Light Degradation:** Implemented as a dual-action transform. It applies a linear gain reduction combined with a non-linear Gamma correction ($\gamma > 1$) to aggressively darken midtones, realistically simulating camera sensor underexposure[cite: 30, 32].
-* **Synthetic Rain:** Generated parametrically via randomized, slanted lines (-25 degrees) whose density and length scale with the intensity level. A Gaussian blur is applied to the streaks prior to blending to simulate motion blur and depth of field[cite: 28, 32].
-* **Severity Ladder (L1-L5):** To ensure a controlled experiment, all severity levels correspond to a normalized intensity scale $[0, 1]$. This scale mathematically dictates the underlying physical parameters for all four distortions[cite: 26, 32].
+* **Gaussian Noise:** Simulated as Additive White Gaussian Noise (AWGN) sampled from a normal distribution. The standard deviation ($\sigma$) is scaled strictly according to the normalized intensity level to simulate varying degrees of sensor thermal noise.
+* **JPEG Compression:** Replicates bandwidth-constrained transmission artifacts. The image is actively encoded and decoded using standard JPEG compression, with the quality factor inversely scaled against the intensity level.
+* **Low-Light Degradation:** Implemented as a dual-action transform. It applies a linear gain reduction combined with a non-linear Gamma correction ($\gamma > 1$) to aggressively darken midtones, realistically simulating camera sensor underexposure.
+* **Synthetic Rain:** Generated parametrically via randomized, slanted lines (-25 degrees) whose density and length scale with the intensity level. A Gaussian blur is applied to the streaks prior to blending to simulate motion blur and depth of field.
+* **Severity Ladder (L1-L5):** To ensure a controlled experiment, all severity levels correspond to a normalized intensity scale $[0, 1]$. This scale mathematically dictates the underlying physical parameters for all four distortions.
 
 Mean SNR over the **500-image** run:
 
