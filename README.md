@@ -62,11 +62,13 @@ Each distortion is applied at five severity levels. We quantify pixel change wit
 
 **SNR = 10·log₁₀(P_signal / P_noise)** (and PSNR).
 
-# Distortion Modeling Methodology
-To rigorously evaluate robustness, distortions were implemented not as arbitrary filters, but as parametric models simulating real-world sensor and environmental conditions:
-- Low-Light Degradation: Implemented as a dual-action transform. It applies a linear gain reduction combined with a non-linear Gamma correction ($\gamma > 1$) to aggressively darken midtones, realistically simulating camera sensor underexposure.
-- Synthetic Rain: Generated parametrically via randomized, slanted lines (-25 degrees) whose density and length scale with the intensity level. A Gaussian blur is applied to the streaks prior to blending to simulate motion blur and depth of field.
-- Severity Ladder (L1-L5): To ensure a controlled experiment, all severity levels correspond to a normalized intensity scale $[0, 1]$. This scale mathematically dictates the underlying physical parameters (e.g., scaling the standard deviation for Gaussian noise, or the explicit quality factor for JPEG compression).
+**Distortion Modeling Methodology**
+To rigorously evaluate robustness, distortions were implemented as parametric models simulating real-world sensor and environmental conditions:
+* **Gaussian Noise:** Simulated as Additive White Gaussian Noise (AWGN) sampled from a normal distribution. The standard deviation ($\sigma$) is scaled strictly according to the normalized intensity level to simulate varying degrees of sensor thermal noise[cite: 29, 32].
+* **JPEG Compression:** Replicates bandwidth-constrained transmission artifacts. The image is actively encoded and decoded using standard JPEG compression, with the quality factor inversely scaled against the intensity level[cite: 31, 32].
+* **Low-Light Degradation:** Implemented as a dual-action transform. It applies a linear gain reduction combined with a non-linear Gamma correction ($\gamma > 1$) to aggressively darken midtones, realistically simulating camera sensor underexposure[cite: 30, 32].
+* **Synthetic Rain:** Generated parametrically via randomized, slanted lines (-25 degrees) whose density and length scale with the intensity level. A Gaussian blur is applied to the streaks prior to blending to simulate motion blur and depth of field[cite: 28, 32].
+* **Severity Ladder (L1-L5):** To ensure a controlled experiment, all severity levels correspond to a normalized intensity scale $[0, 1]$. This scale mathematically dictates the underlying physical parameters for all four distortions[cite: 26, 32].
 
 Mean SNR over the **500-image** run:
 
@@ -83,11 +85,11 @@ Full table: `results/report/snr_by_severity.csv`.
 
 *Figure 1 — Clean sample and all five severity levels for every distortion. Panel labels show per-image SNR. Low light changes brightness strongly (low SNR); rain and mild JPEG can look subtle while still affecting detectors.*
 
-# Enhancement Methodology 
-
-- Non-Local Means (Gaussian Noise): Unlike standard linear filters that uniformly blur images, NLM leverages self-similarity across the spatial domain. It averages pixels with similar local neighborhoods, effectively cancelling out zero-mean Gaussian noise while preserving high-frequency structural details.
-- Bilateral Filtering (JPEG Compression): To mitigate block artifacts caused by DCT quantization, the bilateral filter applies a combined domain (spatial) and range (intensity) kernel. This selectively smooths homogeneous regions while halting diffusion across strong gradients, strictly preserving edges.
-- CLAHE (Low-Light Recovery): Standard global histogram equalization often amplifies noise in dark, uniform regions. CLAHE mitigates this by computing local histograms and clipping the distribution (limiting the contrast gain) before applying the cumulative distribution function, yielding balanced local enhancement without blowing out noise.
+**Enhancement Methodology**
+* **Non-Local Means (for Gaussian Noise):** Unlike standard linear filters that uniformly blur images, NLM leverages self-similarity across the spatial domain. It averages pixels with similar local neighborhoods, effectively cancelling out zero-mean Gaussian noise while preserving high-frequency structural details.
+* **Bilateral Filtering (for JPEG Compression):** To mitigate block artifacts caused by DCT quantization, the bilateral filter applies a combined domain (spatial) and range (intensity) kernel. This selectively smooths homogeneous regions while halting diffusion across strong gradients, strictly preserving edges.
+* **CLAHE (for Low-Light Recovery):** Standard global histogram equalization often amplifies noise in dark, uniform regions. CLAHE mitigates this by computing local histograms and clipping the distribution (limiting the contrast gain) before applying the cumulative distribution function, yielding balanced local enhancement without blowing out noise.
+* **Masking & Inpainting (for Rain Removal):** Rain artifacts introduce high-frequency, directional structural noise. The recovery process isolates these features utilizing a bright-streak mask, followed by an inpainting algorithm that interpolates the missing pixels from their immediate, uncorrupted surroundings to seamlessly restore the background scene.
 
 ---
 
