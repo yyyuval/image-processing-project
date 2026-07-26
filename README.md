@@ -237,7 +237,7 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 
 **Finding:** with **500 images**, fine-tuning clearly helps the matched distortion (noise). Gains do not automatically transfer to other distortions (some negative transfer).
 
-# Fine-Tuning Implementation 
+**Fine-Tuning Implementation**
 - DetailsBase Architecture: The evaluation process evaluates the fine-tuned model against the baseline utilizing the yolov8n.pt (nano) weights.
 - Dynamic Class Mapping: To ensure fair and accurate evaluation, the pipeline dynamically maps local fine-tuned class IDs back to the original COCO IDs using a generated coco_to_local.yaml mapping file.
 - Hardware Agnosticism: The evaluation pipeline dynamically checks the environment and seamlessly falls back to CPU execution if required by the system configuration.  
