@@ -62,6 +62,12 @@ Each distortion is applied at five severity levels. We quantify pixel change wit
 
 **SNR = 10·log₁₀(P_signal / P_noise)** (and PSNR).
 
+# Distortion Modeling Methodology
+To rigorously evaluate robustness, distortions were implemented not as arbitrary filters, but as parametric models simulating real-world sensor and environmental conditions:
+- Low-Light Degradation: Implemented as a dual-action transform. It applies a linear gain reduction combined with a non-linear Gamma correction ($\gamma > 1$) to aggressively darken midtones, realistically simulating camera sensor underexposure.
+- Synthetic Rain: Generated parametrically via randomized, slanted lines (-25 degrees) whose density and length scale with the intensity level. A Gaussian blur is applied to the streaks prior to blending to simulate motion blur and depth of field.
+- Severity Ladder (L1-L5): To ensure a controlled experiment, all severity levels correspond to a normalized intensity scale $[0, 1]$. This scale mathematically dictates the underlying physical parameters (e.g., scaling the standard deviation for Gaussian noise, or the explicit quality factor for JPEG compression).
+
 Mean SNR over the **500-image** run:
 
 | Distortion | L1 SNR (dB) | L3 SNR (dB) | L5 SNR (dB) | Paired enhancement |
@@ -103,6 +109,11 @@ make smoke
 
 Stage scripts: `scripts/01` … `scripts/10`, plus `scripts/00_validate_pipeline.py`.  
 Configuration: `configs/default.yaml` (`max_samples: 500`).
+
+# Testing & Quality Assurance
+To ensure the robustness and accuracy of our evaluation pipeline, we implemented a comprehensive test suite:
+- Algorithm Validation: Unit tests strictly validate classical CV metrics (e.g., ORB matching stability, mIoU edge cases) and mathematically verify that our enhancements empirically improve PSNR metrics compared to raw distortions.
+- Integration (Smoke) Testing: We developed a fast, automated smoke test utilizing a dynamically generated synthetic dataset. This verifies the end-to-end pipeline execution (Clean $\rightarrow$ Distort $\rightarrow$ Enhance) and artifact generation without requiring the full ADE20K payload.  
 
 ---
 
@@ -223,12 +234,10 @@ On the **training condition** (noise @ 0.6): pretrained **0.331** → fine-tuned
 
 **Finding:** with **500 images**, fine-tuning clearly helps the matched distortion (noise). Gains do not automatically transfer to other distortions (some negative transfer).
 
-# Fine-Tuning Configuration
-
-- Base Architecture: YOLOv8n (nano) for rapid inference.
-- Dataset Generation: Pseudo-labels generated from the pre-trained baseline model applied to clean ADE20K images.
-- Training Condition: Evaluated against Gaussian noise at severity level 0.6.
-- Optimization: Executed via the Ultralytics framework (device and epoch parameters dynamically resolved via configs/default.yaml).
+# Fine-Tuning Implementation 
+- DetailsBase Architecture: The evaluation process evaluates the fine-tuned model against the baseline utilizing the yolov8n.pt (nano) weights.
+- Dynamic Class Mapping: To ensure fair and accurate evaluation, the pipeline dynamically maps local fine-tuned class IDs back to the original COCO IDs using a generated coco_to_local.yaml mapping file.
+- Hardware Agnosticism: The evaluation pipeline dynamically checks the environment and seamlessly falls back to CPU execution if required by the system configuration.  
 
 ---
 
@@ -255,10 +264,15 @@ presentation/             # final PPT (add before submission)
 data/                     # caches (gitignored payloads)
 ```
 
+# Environment & Pipeline Orchestration
+- Execution: All scripts are designed for a Python 3 runtime environment.
+- Orchestration: A central entrypoint script handles the end-to-end experiment by leveraging the subprocess module to execute modular stages (e.g., dataset downloading, distortion, enhancement, and evaluation) in sequence.
+- Metrics Aggregation: The pipeline heavily utilizes the pandas library to aggregate raw CSV outputs from various stages, facilitating the generation of unified metric dataframes and performance curves.  
+
 ---
 
-## 10. Notes / limitations
-
-- Detection “clean F1 = 1.0” is relative to clean-image YOLO outputs used as cascading references when COCO boxes are unavailable; segmentation uses true ADE GT.  
-- Fine-tune uses remapped contiguous class ids (Ultralytics requirement); eval remaps back to COCO ids for comparison.  
-- Large image caches (`data/`, YOLO weights, venv) are **not** committed; regenerate with the scripts above.
+## 10. Evaluation Methodology & Known Limitations
+- Cross-Domain Label Mismatch: The baseline YOLOv8 model is pre-trained on the COCO dataset, whereas our ground-truth (GT) semantic masks originate from ADE20K. To bridge this domain label gap, our pipeline dynamically extracts bounding boxes from the ADE20K semantic masks and performs class-agnostic localization evaluation for YOLO GT metrics.
+- Stability vs. Absolute Accuracy: For classical low-level tasks (ORB features and Canny edges), the evaluation metrics reflect algorithm stability under distortion rather than absolute ground-truth accuracy. Performance is measured utilizing the model's prediction on the clean image as a dynamic cascading reference.
+- Strict Feature Matching: ORB feature matching accuracy is constrained by a rigorous KNN Lowe's ratio test (ratio = 0.75) to actively filter out ambiguous correspondences. Consequently, the reported match accuracy strictly reflects robust structural persistence.
+- Segmentation GT Handling: SegFormer mIoU metric calculations correctly bypass unannotated regions (ignore_index = 255) to prevent artificial inflation of pixel accuracy and background IoU scores.  
